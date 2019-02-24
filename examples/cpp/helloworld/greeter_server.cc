@@ -39,10 +39,13 @@ using helloworld::Greeter;
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
   Status SayHello(ServerContext* context, const HelloRequest* request,
-                  HelloReply* reply) override {
+                  HelloReply* reply) override 
+  {
     std::string prefix("Hello ");
     reply->set_message(prefix + request->name());
-    return Status::OK;
+	printf("Get SayHello %s\n", request->name().c_str());
+   
+	return Status::OK;
   }
 };
 
