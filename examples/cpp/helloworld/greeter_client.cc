@@ -82,5 +82,7 @@ int main(int argc, char** argv) {
   std::string reply = greeter.SayHello(user);
   std::cout << "Greeter received: " << reply << std::endl;
 
+  getchar();
+  getchar();
   return 0;
 }
