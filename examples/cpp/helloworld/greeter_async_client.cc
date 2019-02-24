@@ -102,16 +102,51 @@ class GreeterClient {
   std::unique_ptr<Greeter::Stub> stub_;
 };
 
+DWORD WINAPI ClientThread(LPVOID lpData)
+{
+	GreeterClient *pClient = (GreeterClient*)(lpData);
+	std::shared_ptr<GreeterClient> shClient;
+	shClient.reset(pClient);
+
+	char buffer[256] = { 0 };
+	
+	
+	std::string user = buffer;
+	int count = 0;
+	while (true)
+	{
+		sprintf(buffer, "world id=[%d] client=%p index=%d", GetCurrentThreadId(), pClient,++count);
+		shClient->SayHello(std::string(buffer));
+		Sleep(500);
+	}
+
+	return 0;
+}
+
 int main(int argc, char** argv) {
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint (in this case,
   // localhost at port 50051). We indicate that the channel isn't authenticated
   // (use of InsecureChannelCredentials()).
-  GreeterClient greeter(grpc::CreateChannel(
-      "localhost:50051", grpc::InsecureChannelCredentials()));
+ 
   std::string user("world");
-  std::string reply = greeter.SayHello(user);  // The actual RPC call!
-  std::cout << "Greeter received: " << reply << std::endl;
+
+  std::list<GreeterClient>  listClients;
+  for (int i = 0; i < 100; ++i)
+  {
+	  CreateThread(NULL, 0, ClientThread, new GreeterClient(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials())), 0, NULL);
+  }
+
+ 
+
+//   while (1)
+//   {
+// 	  std::string reply = greeter.SayHello(user);  // The actual RPC call!
+// 	  std::cout << "Greeter received: " << reply << std::endl;
+// 	  
+// 
+//   }
+  Sleep(50000000);
 
   return 0;
 }
