@@ -26,6 +26,8 @@
 
 #include "helloworld.grpc.pb.h"
 
+using namespace std;
+
 using grpc::Server;
 using grpc::ServerAsyncResponseWriter;
 using grpc::ServerBuilder;
@@ -36,16 +38,20 @@ using helloworld::HelloRequest;
 using helloworld::HelloReply;
 using helloworld::Greeter;
 
-class ServerImpl final {
+class ServerImpl final
+{
  public:
-  ~ServerImpl() {
+  
+   ~ServerImpl() 
+  {
     server_->Shutdown();
     // Always shutdown the completion queue after the server.
     cq_->Shutdown();
   }
 
   // There is no shutdown handling in this code.
-  void Run() {
+  void Run() 
+  {
     std::string server_address("0.0.0.0:50051");
 
     ServerBuilder builder;
@@ -66,20 +72,26 @@ class ServerImpl final {
   }
 
  private:
-  // Class encompasing the state and logic needed to serve a request.
-  class CallData {
+  
+   // Class encompasing the state and logic needed to serve a request.
+  class CallData 
+  {
    public:
     // Take in the "service" instance (in this case representing an asynchronous
     // server) and the completion queue "cq" used for asynchronous communication
     // with the gRPC runtime.
     CallData(Greeter::AsyncService* service, ServerCompletionQueue* cq)
-        : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE) {
+        : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE) 
+    {
+      std::cout << "new CallData: " << this << std::endl;
       // Invoke the serving logic right away.
       Proceed();
     }
 
-    void Proceed() {
-      if (status_ == CREATE) {
+    void Proceed() 
+    {
+      if (status_ == CREATE) 
+      {
         // Make this instance progress to the PROCESS state.
         status_ = PROCESS;
 
@@ -90,7 +102,9 @@ class ServerImpl final {
         // the memory address of this CallData instance.
         service_->RequestSayHello(&ctx_, &request_, &responder_, cq_, cq_,
                                   this);
-      } else if (status_ == PROCESS) {
+      }
+      else if (status_ == PROCESS) 
+      {
         // Spawn a new CallData instance to serve new clients while we process
         // the one for this CallData. The instance will deallocate itself as
         // part of its FINISH state.
@@ -138,13 +152,17 @@ class ServerImpl final {
     CallStatus status_;  // The current serving state.
   };
 
+
   // This can be run in multiple threads if needed.
-  void HandleRpcs() {
+  void HandleRpcs() 
+  {
     // Spawn a new CallData instance to serve new clients.
-    new CallData(&service_, cq_.get());
+    CallData *pCallData = new CallData(&service_, cq_.get());
+  
     void* tag;  // uniquely identifies a request.
     bool ok;
-    while (true) {
+    while (true) 
+    {
       // Block waiting to read the next event from the completion queue. The
       // event is uniquely identified by its tag, which in this case is the
       // memory address of a CallData instance.
@@ -152,6 +170,9 @@ class ServerImpl final {
       // tells us whether there is any kind of event or cq_ is shutting down.
       GPR_ASSERT(cq_->Next(&tag, &ok));
       GPR_ASSERT(ok);
+
+      std::cout << "get new CallData: " << tag << endl;
+
       static_cast<CallData*>(tag)->Proceed();
     }
   }

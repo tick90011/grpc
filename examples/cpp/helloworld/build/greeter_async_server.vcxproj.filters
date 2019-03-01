@@ -4,6 +4,9 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{BC377037-51AC-34E9-934A-1156B15D4B36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="proto">
+      <UniqueIdentifier>{e06ed304-fa0f-4fec-bac1-dd7b91a1ae37}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\greeter_async_server.cc">
@@ -23,5 +26,10 @@
     <ClInclude Include="..\helloworld.pb.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\protos\helloworld.proto">
+      <Filter>proto</Filter>
+    </None>
   </ItemGroup>
 </Project>
