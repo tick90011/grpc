@@ -20,6 +20,9 @@ namespace helloworld {
 
 static const char* Greeter_method_names[] = {
   "/helloworld.Greeter/SayHello",
+  "/helloworld.Greeter/SayHello2",
+  "/helloworld.Greeter/SayHello3",
+  "/helloworld.Greeter/SayHello4",
 };
 
 std::unique_ptr< Greeter::Stub> Greeter::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -30,6 +33,9 @@ std::unique_ptr< Greeter::Stub> Greeter::NewStub(const std::shared_ptr< ::grpc::
 
 Greeter::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
   : channel_(channel), rpcmethod_SayHello_(Greeter_method_names[0], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_SayHello2_(Greeter_method_names[1], ::grpc::internal::RpcMethod::SERVER_STREAMING, channel)
+  , rpcmethod_SayHello3_(Greeter_method_names[2], ::grpc::internal::RpcMethod::CLIENT_STREAMING, channel)
+  , rpcmethod_SayHello4_(Greeter_method_names[3], ::grpc::internal::RpcMethod::BIDI_STREAMING, channel)
   {}
 
 ::grpc::Status Greeter::Stub::SayHello(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::helloworld::HelloReply* response) {
@@ -48,12 +54,75 @@ void Greeter::Stub::experimental_async::SayHello(::grpc::ClientContext* context,
   return ::grpc::internal::ClientAsyncResponseReaderFactory< ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello_, context, request, false);
 }
 
+::grpc::ClientReader< ::helloworld::HelloReply>* Greeter::Stub::SayHello2Raw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request) {
+  return ::grpc::internal::ClientReaderFactory< ::helloworld::HelloReply>::Create(channel_.get(), rpcmethod_SayHello2_, context, request);
+}
+
+void Greeter::Stub::experimental_async::SayHello2(::grpc::ClientContext* context, ::helloworld::HelloRequest* request, ::grpc::experimental::ClientReadReactor< ::helloworld::HelloReply>* reactor) {
+  ::grpc::internal::ClientCallbackReaderFactory< ::helloworld::HelloReply>::Create(stub_->channel_.get(), stub_->rpcmethod_SayHello2_, context, request, reactor);
+}
+
+::grpc::ClientAsyncReader< ::helloworld::HelloReply>* Greeter::Stub::AsyncSayHello2Raw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncReaderFactory< ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello2_, context, request, true, tag);
+}
+
+::grpc::ClientAsyncReader< ::helloworld::HelloReply>* Greeter::Stub::PrepareAsyncSayHello2Raw(::grpc::ClientContext* context, const ::helloworld::HelloRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncReaderFactory< ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello2_, context, request, false, nullptr);
+}
+
+::grpc::ClientWriter< ::helloworld::HelloRequest>* Greeter::Stub::SayHello3Raw(::grpc::ClientContext* context, ::helloworld::HelloReply* response) {
+  return ::grpc::internal::ClientWriterFactory< ::helloworld::HelloRequest>::Create(channel_.get(), rpcmethod_SayHello3_, context, response);
+}
+
+void Greeter::Stub::experimental_async::SayHello3(::grpc::ClientContext* context, ::helloworld::HelloReply* response, ::grpc::experimental::ClientWriteReactor< ::helloworld::HelloRequest>* reactor) {
+  ::grpc::internal::ClientCallbackWriterFactory< ::helloworld::HelloRequest>::Create(stub_->channel_.get(), stub_->rpcmethod_SayHello3_, context, response, reactor);
+}
+
+::grpc::ClientAsyncWriter< ::helloworld::HelloRequest>* Greeter::Stub::AsyncSayHello3Raw(::grpc::ClientContext* context, ::helloworld::HelloReply* response, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncWriterFactory< ::helloworld::HelloRequest>::Create(channel_.get(), cq, rpcmethod_SayHello3_, context, response, true, tag);
+}
+
+::grpc::ClientAsyncWriter< ::helloworld::HelloRequest>* Greeter::Stub::PrepareAsyncSayHello3Raw(::grpc::ClientContext* context, ::helloworld::HelloReply* response, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncWriterFactory< ::helloworld::HelloRequest>::Create(channel_.get(), cq, rpcmethod_SayHello3_, context, response, false, nullptr);
+}
+
+::grpc::ClientReaderWriter< ::helloworld::HelloRequest, ::helloworld::HelloReply>* Greeter::Stub::SayHello4Raw(::grpc::ClientContext* context) {
+  return ::grpc::internal::ClientReaderWriterFactory< ::helloworld::HelloRequest, ::helloworld::HelloReply>::Create(channel_.get(), rpcmethod_SayHello4_, context);
+}
+
+void Greeter::Stub::experimental_async::SayHello4(::grpc::ClientContext* context, ::grpc::experimental::ClientBidiReactor< ::helloworld::HelloRequest,::helloworld::HelloReply>* reactor) {
+  ::grpc::internal::ClientCallbackReaderWriterFactory< ::helloworld::HelloRequest,::helloworld::HelloReply>::Create(stub_->channel_.get(), stub_->rpcmethod_SayHello4_, context, reactor);
+}
+
+::grpc::ClientAsyncReaderWriter< ::helloworld::HelloRequest, ::helloworld::HelloReply>* Greeter::Stub::AsyncSayHello4Raw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncReaderWriterFactory< ::helloworld::HelloRequest, ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello4_, context, true, tag);
+}
+
+::grpc::ClientAsyncReaderWriter< ::helloworld::HelloRequest, ::helloworld::HelloReply>* Greeter::Stub::PrepareAsyncSayHello4Raw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncReaderWriterFactory< ::helloworld::HelloRequest, ::helloworld::HelloReply>::Create(channel_.get(), cq, rpcmethod_SayHello4_, context, false, nullptr);
+}
+
 Greeter::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       Greeter_method_names[0],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< Greeter::Service, ::helloworld::HelloRequest, ::helloworld::HelloReply>(
           std::mem_fn(&Greeter::Service::SayHello), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      Greeter_method_names[1],
+      ::grpc::internal::RpcMethod::SERVER_STREAMING,
+      new ::grpc::internal::ServerStreamingHandler< Greeter::Service, ::helloworld::HelloRequest, ::helloworld::HelloReply>(
+          std::mem_fn(&Greeter::Service::SayHello2), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      Greeter_method_names[2],
+      ::grpc::internal::RpcMethod::CLIENT_STREAMING,
+      new ::grpc::internal::ClientStreamingHandler< Greeter::Service, ::helloworld::HelloRequest, ::helloworld::HelloReply>(
+          std::mem_fn(&Greeter::Service::SayHello3), this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      Greeter_method_names[3],
+      ::grpc::internal::RpcMethod::BIDI_STREAMING,
+      new ::grpc::internal::BidiStreamingHandler< Greeter::Service, ::helloworld::HelloRequest, ::helloworld::HelloReply>(
+          std::mem_fn(&Greeter::Service::SayHello4), this)));
 }
 
 Greeter::Service::~Service() {
@@ -63,6 +132,26 @@ Greeter::Service::~Service() {
   (void) context;
   (void) request;
   (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status Greeter::Service::SayHello2(::grpc::ServerContext* context, const ::helloworld::HelloRequest* request, ::grpc::ServerWriter< ::helloworld::HelloReply>* writer) {
+  (void) context;
+  (void) request;
+  (void) writer;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status Greeter::Service::SayHello3(::grpc::ServerContext* context, ::grpc::ServerReader< ::helloworld::HelloRequest>* reader, ::helloworld::HelloReply* response) {
+  (void) context;
+  (void) reader;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status Greeter::Service::SayHello4(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::helloworld::HelloReply, ::helloworld::HelloRequest>* stream) {
+  (void) context;
+  (void) stream;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }
 
