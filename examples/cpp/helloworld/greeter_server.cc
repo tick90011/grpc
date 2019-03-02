@@ -19,6 +19,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <windows.h>
 
 #include <grpcpp/grpcpp.h>
 
@@ -36,17 +37,82 @@ using helloworld::HelloRequest;
 using helloworld::HelloReply;
 using helloworld::Greeter;
 
+using namespace std;
+
+#define  COUT_THREADID() cout << "threadId: " << GetCurrentThreadId() <<endl
+
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
+
+	//单独发送一个包, 接收一个包
   Status SayHello(ServerContext* context, const HelloRequest* request,
                   HelloReply* reply) override 
   {
     std::string prefix("Hello ");
     reply->set_message(prefix + request->name());
 	printf("Get SayHello %s\n", request->name().c_str());
-   
+	COUT_THREADID();
+
 	return Status::OK;
   }
+
+
+  //发送HelloRequest 接收到HelloRelpy 数组
+  ::grpc::Status SayHello2(::grpc::ServerContext* context, 
+	  const ::helloworld::HelloRequest* request,
+	  ::grpc::ServerWriter< ::helloworld::HelloReply>* writer)
+  {
+	  std::string prefix("Hello2 ");
+	  for (int i = 0; i < 1000; ++i)
+	  {
+		  HelloReply hello;
+		  hello.set_message(prefix + request->name());
+		  writer->Write(hello);
+	  }
+	  printf("Get SayHello2 %s\n", request->name().c_str());
+	  COUT_THREADID();
+	  return Status::OK;
+  }
+
+  //发送一个数组, 接收一个包
+  ::grpc::Status SayHello3(::grpc::ServerContext* context, ::grpc::ServerReader< ::helloworld::HelloRequest>* reader, ::helloworld::HelloReply* response)
+  {
+	  std::string prefix("Hello2 ");
+
+	  HelloRequest req;
+	  while (reader->Read(&req))
+	  {
+		  cout << "SayHello3 Recv: " << req.name() <<endl;
+	  }
+	  response->set_message(prefix + req.name());
+	  COUT_THREADID();
+	  return Status::OK;
+  }
+
+
+  //发送一个list ,返回一个list
+  ::grpc::Status SayHello4(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::helloworld::HelloReply, ::helloworld::HelloRequest>* stream)
+  {
+	  std::string prefix("SayHello4 ");
+
+	  HelloRequest req;
+	  while (stream->Read(&req))
+	  {
+		  cout << "SayHello4 Recv: " << req.name() << endl;
+
+		  HelloReply hello;
+		  hello.set_message(prefix + req.name());
+		  stream->Write(hello);
+
+		  Sleep(1000);
+	  }
+	  
+	  COUT_THREADID();
+
+	  return Status::OK;
+  }
+
+
 };
 
 void RunServer() {
