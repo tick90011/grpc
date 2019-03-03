@@ -77,13 +77,20 @@ class ServerImpl final
   class CallData 
   {
    public:
+	   enum ServiceType {
+		   ST_HELLO_FUNC1 = 0,
+		   ST_HELLO_FUNC2 = 1,
+		   ST_HELLO2,
+		   ST_HELLO3,
+		   ST_HELLO4
+	   };
     // Take in the "service" instance (in this case representing an asynchronous
     // server) and the completion queue "cq" used for asynchronous communication
     // with the gRPC runtime.
-    CallData(Greeter::AsyncService* service, ServerCompletionQueue* cq)
-        : service_(service), cq_(cq), responder_(&ctx_), responder2_(&ctx_), status_(CREATE)
+    CallData(Greeter::AsyncService* service, ServerCompletionQueue* cq, ServiceType type)
+        : service_(service), cq_(cq), responder1_(&ctx_), responder2_(&ctx_), status_(CREATE), type_(type)
     {
-      std::cout << "new CallData: " << this << std::endl;
+      std::cout << "new CallData: " << this <<  "type : " << type_ << std::endl;
       // Invoke the serving logic right away.
       Proceed();
     }
@@ -95,46 +102,71 @@ class ServerImpl final
         // Make this instance progress to the PROCESS state.
         status_ = PROCESS;
 
-        // As part of the initial CREATE state, we *request* that the system
-        // start processing SayHello requests. In this request, "this" acts are
-        // the tag uniquely identifying the request (so that different CallData
-        // instances can serve different requests concurrently), in this case
-        // the memory address of this CallData instance.
-        //service_->RequestSayHello(&ctx_, &request_, &responder_, cq_, cq_,  this);
+		switch (type_)
+		{
+		case ServerImpl::CallData::ST_HELLO_FUNC1:
+			// As part of the initial CREATE state, we *request* that the system
+			// start processing SayHello requests. In this request, "this" acts are
+			// the tag uniquely identifying the request (so that different CallData
+			// instances can serve different requests concurrently), in this case
+			// the memory address of this CallData instance.
+			service_->RequestSayHelloFunc1(&ctx_, &request1_, &responder1_, cq_, cq_, this);
+			break;
+		case ServerImpl::CallData::ST_HELLO_FUNC2:
+			service_->RequestSayHelloFunc2(&ctx_, &request2_, &responder2_, cq_, cq_, this);
+			break;
+		default:
+			break;
+		}
 
-		/*::grpc::ServerContext* context, 
-		::helloworld::HelloRequest* request,
-			::grpc::ServerAsyncWriter< ::helloworld::HelloReply>* writer, 
-			::grpc::CompletionQueue* new_call_cq,
-			::grpc::ServerCompletionQueue* notification_cq,
-			void *tag*/
-		service_->RequestSayHello2(&ctx_, &request_, &responder2_, cq_, cq_,
-			this);
       }
       else if (status_ == PROCESS) 
       {
         // Spawn a new CallData instance to serve new clients while we process
         // the one for this CallData. The instance will deallocate itself as
         // part of its FINISH state.
-        new CallData(service_, cq_);
+		  status_ = FINISH;
+        new CallData(service_, cq_,type_);
 
-        // The actual processing.
-        std::string prefix("Hello ");
-        reply_.set_message(prefix + request_.name());
+		switch (type_)
+		{
+		case ServerImpl::CallData::ST_HELLO_FUNC1:
 
-		printf("Get SayHello %s\n", request_.name().c_str());
+			reply1_.set_message("ST_HELLO_FUNC1 this is from server reply");
+			printf("ST_HELLO_FUNC1 Server get from client message %s\n", request1_.name().c_str());
 
-        // And we are done! Let the gRPC runtime know we've finished, using the
-        // memory address of this instance as the uniquely identifying tag for
-        // the event.
-        status_ = FINISH;
-        responder_.Finish(reply_, Status::OK, this);
+			// And we are done! Let the gRPC runtime know we've finished, using the
+			// memory address of this instance as the uniquely identifying tag for
+			// the event.
+			status_ = FINISH;
+			responder1_.Finish(reply1_, Status::OK, this);
+
+			break;
+		case ServerImpl::CallData::ST_HELLO_FUNC2:
+
+			reply2_.set_message("ST_HELLO_FUNC2 this is from server reply");
+			printf("ST_HELLO_FUNC2 Server get from client message %s\n", request2_.name().c_str());
+			status_ = FINISH;
+			responder2_.Finish(reply2_, Status::OK, this);
+			break;
+
+		case ServerImpl::CallData::ST_HELLO2:
+			break;
+		case ServerImpl::CallData::ST_HELLO3:
+			break;
+		case ServerImpl::CallData::ST_HELLO4:
+			break;
+		default:
+			break;
+		}
       } else {
         GPR_ASSERT(status_ == FINISH);
         // Once in the FINISH state, deallocate ourselves (CallData).
         delete this;
       }
     }
+
+	ServiceType GetType() const { return type_; }
 
    private:
     // The means of communication with the gRPC runtime for an asynchronous
@@ -148,19 +180,28 @@ class ServerImpl final
     ServerContext ctx_;
 
     // What we get from the client.
-    HelloRequest request_;
+    HelloRequest request1_;
     // What we send back to the client.
-    HelloReply reply_;
+    HelloReply reply1_;
 
     // The means to get back to the client.
-    ServerAsyncResponseWriter<HelloReply> responder_;
+    ServerAsyncResponseWriter<HelloReply> responder1_;
 
+	// What we get from the client.
+	HelloRequest request2_;
+	// What we send back to the client.
+	HelloReply reply2_;
 
-	::grpc::ServerAsyncWriter< HelloReply>  responder2_;
+	// The means to get back to the client.
+	ServerAsyncResponseWriter<HelloReply> responder2_;
+
 
     // Let's implement a tiny state machine with the following states.
     enum CallStatus { CREATE, PROCESS, FINISH };
     CallStatus status_;  // The current serving state.
+
+
+	ServiceType type_;
   };
 
 
@@ -168,8 +209,9 @@ class ServerImpl final
   void HandleRpcs() 
   {
     // Spawn a new CallData instance to serve new clients.
-    CallData *pCallData = new CallData(&service_, cq_.get());
-  
+	new CallData(&service_, cq_.get(), CallData::ST_HELLO_FUNC1);
+	new CallData(&service_, cq_.get(), CallData::ST_HELLO_FUNC2);
+
     void* tag;  // uniquely identifies a request.
     bool ok;
     while (true) 
@@ -182,9 +224,11 @@ class ServerImpl final
       GPR_ASSERT(cq_->Next(&tag, &ok));
       GPR_ASSERT(ok);
 
-      std::cout << "get new CallData: " << tag << endl;
+	  CallData *pCallData = static_cast<CallData*>(tag);
 
-      static_cast<CallData*>(tag)->Proceed();
+      std::cout << "get new CallData: " << pCallData  << " type: " << pCallData->GetType()<< endl;
+
+	  pCallData->Proceed();
     }
   }
 

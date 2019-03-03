@@ -114,18 +114,20 @@ void AddDescriptorsImpl() {
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\020helloworld.proto\022\nhelloworld\"\034\n\014HelloR"
       "equest\022\014\n\004name\030\001 \001(\t\"\035\n\nHelloReply\022\017\n\007me"
-      "ssage\030\001 \001(\t2\224\002\n\007Greeter\022>\n\010SayHello\022\030.he"
-      "lloworld.HelloRequest\032\026.helloworld.Hello"
-      "Reply\"\000\022A\n\tSayHello2\022\030.helloworld.HelloR"
-      "equest\032\026.helloworld.HelloReply\"\0000\001\022A\n\tSa"
-      "yHello3\022\030.helloworld.HelloRequest\032\026.hell"
-      "oworld.HelloReply\"\000(\001\022C\n\tSayHello4\022\030.hel"
-      "loworld.HelloRequest\032\026.helloworld.HelloR"
-      "eply\"\000(\0010\001B6\n\033io.grpc.examples.helloworl"
-      "dB\017HelloWorldProtoP\001\242\002\003HLWb\006proto3"
+      "ssage\030\001 \001(\t2\336\002\n\007Greeter\022C\n\rSayHelloFunc1"
+      "\022\030.helloworld.HelloRequest\032\026.helloworld."
+      "HelloReply\"\000\022C\n\rSayHelloFunc2\022\030.hellowor"
+      "ld.HelloRequest\032\026.helloworld.HelloReply\""
+      "\000\022A\n\tSayHello2\022\030.helloworld.HelloRequest"
+      "\032\026.helloworld.HelloReply\"\0000\001\022A\n\tSayHello"
+      "3\022\030.helloworld.HelloRequest\032\026.helloworld"
+      ".HelloReply\"\000(\001\022C\n\tSayHello4\022\030.helloworl"
+      "d.HelloRequest\032\026.helloworld.HelloReply\"\000"
+      "(\0010\001B6\n\033io.grpc.examples.helloworldB\017Hel"
+      "loWorldProtoP\001\242\002\003HLWb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 434);
+      descriptor, 508);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "helloworld.proto", &protobuf_RegisterTypes);
 }

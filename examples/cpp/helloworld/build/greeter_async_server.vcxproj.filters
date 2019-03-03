@@ -28,7 +28,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\protos\helloworld.proto">
+    <None Include="..\helloworld.proto">
       <Filter>proto</Filter>
     </None>
   </ItemGroup>

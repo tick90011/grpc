@@ -43,7 +43,7 @@ class GreeterClient {
       : stub_(Greeter::NewStub(channel)) {}
 
 //单独发送一个包, 接收一个包
-  std::string SayHello(const std::string& user)
+  std::string SayHelloFunc1(const std::string& user)
   {
 	  // Data we are sending to the server.
 	  HelloRequest request;
@@ -57,7 +57,35 @@ class GreeterClient {
 	  ClientContext context;
 
 	  // The actual RPC.
-	  Status status = stub_->SayHello(&context, request, &reply);
+	  Status status = stub_->SayHelloFunc1(&context, request, &reply);
+
+	  printf("%s\n", reply.DebugString().c_str());
+	  // Act upon its status.
+	  if (status.ok()) {
+		  return reply.message();
+	  }
+	  else {
+		  std::cout << status.error_code() << ": " << status.error_message()
+			  << std::endl;
+		  return "RPC failed";
+	  }
+  }
+
+  std::string SayHelloFunc2(const std::string& user)
+  {
+	  // Data we are sending to the server.
+	  HelloRequest request;
+	  request.set_name(user);
+
+	  // Container for the data we expect from the server.
+	  HelloReply reply;
+
+	  // Context for the client. It could be used to convey extra information to
+	  // the server and/or tweak certain RPC behaviors.
+	  ClientContext context;
+
+	  // The actual RPC.
+	  Status status = stub_->SayHelloFunc2(&context, request, &reply);
 
 	  printf("%s\n", reply.DebugString().c_str());
 	  // Act upon its status.
@@ -148,7 +176,7 @@ class GreeterClient {
 	  // the server and/or tweak certain RPC behaviors.
 	  ClientContext context;
 	  std::unique_ptr< ::grpc::ClientReaderWriter< ::helloworld::HelloRequest, ::helloworld::HelloReply>> stream = stub_->SayHello4(&context);
-	  for (int i = 0; i < 10000; ++i)
+	  for (int i = 0; i < 100; ++i)
 	  {
 		  stream->Write(request);
 	  }
@@ -182,9 +210,23 @@ int main(int argc, char** argv) {
 
   }*/
 
-  std::string reply = greeter.SayHello(user);
-  std::cout << "SayHello received: " << reply << std::endl;
+  while (true)
+  {
+	  std::string reply = greeter.SayHelloFunc1("Client Called SayHelloFunc1");
+	  std::cout << "SayHelloFunc1 received: " << reply << std::endl;
 
+
+	  reply = greeter.SayHelloFunc2("Client Called SayHelloFunc2");
+	  std::cout << "SayHelloFunc2 received: " << reply << std::endl;
+
+	  this_thread::sleep_for(std::chrono::microseconds(100));
+
+	  break;
+  }
+
+  
+
+/*
   auto listReply =  greeter.SayHello2(user);
   cout << "SayHello2 received:  size :  " << listReply.size() << endl;
 
@@ -194,7 +236,7 @@ int main(int argc, char** argv) {
   reply = greeter.SayHello3(user);
 
 
-  greeter.SayHello4(user);
+  greeter.SayHello4(user);*/
 
   getchar();
   getchar();
