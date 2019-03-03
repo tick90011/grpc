@@ -163,10 +163,15 @@ class RouteGuideClient {
         MakeRouteNote("Second message", 0, 1),
         MakeRouteNote("Third message", 1, 0),
         MakeRouteNote("Fourth message", 0, 0)};
+
       for (const RouteNote& note : notes) {
         std::cout << "Sending message " << note.message()
                   << " at " << note.location().latitude() << ", "
                   << note.location().longitude() << std::endl;
+		
+		/**  2019.3.3  liuqiang*/
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+
         stream->Write(note);
       }
       stream->WritesDone();

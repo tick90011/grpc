@@ -157,6 +157,9 @@
     <ClCompile Include="route_guide.pb.cc" />
     <ClCompile Include="route_guide_server.cc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="route_guide.proto" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
